@@ -79,7 +79,10 @@ class KDTree:
         '''
 
         root = self._visualize(self.root, None)
+        print("\nVISUALIZATION OF KD-TREE: \n")
         print_tree(root, nameattr='value')
+        print("\n")
+        print("\n")
 
 
     def _visualize(self, currentNode, parentNode):
@@ -98,7 +101,11 @@ class KDTree:
                 treeNode.left = self._visualize(currentNode.right, treeNode)
             return treeNode
 
-    def findMin(self, currentNode, dim):
+    def findMin(self, dim):
+        result = self._findMin(self.root, dim)
+        return result.value
+
+    def _findMin(self, currentNode, dim):
         '''
         This method finds the node with the smallest value in the dim-th dimension.
         '''
@@ -110,22 +117,36 @@ class KDTree:
                 minimum = currentNode
             else:
                 # OTHERWISE, RECURSE ON LEFT SUBTREE
-                minimum = self.findMin(currentNode.left, dim)
+                minimum = self._findMin(currentNode.left, dim)
         
         else:
             # OTHERWISE, MINIMUM COULD BE IN EITHER SUBTREE
             minimumLeft = None
             minimumRight = None
             if currentNode.left:
-                minimumLeft = self.findMin(currentNode.left, dim)
+                minimumLeft = self._findMin(currentNode.left, dim)
             if currentNode.right:
-                minimumRight = self.findMin(currentNode.right, dim)
+                minimumRight = self._findMin(currentNode.right, dim)
             
+            #  IF CURRENT NODE HAS LEFT AND RIGHT SUBTREES
             if minimumLeft and minimumRight:
+                # IF IN X-DIMENSION
                 if dim == self.dimensions[0]:
-                    minimum = min(minimumLeft.value, minimumRight.value)
+                    # IF MINLEFT'S X IS SMALLER THAN MINRIGHT'S X
+                    if minimumLeft.value[0] < minimumRight.value[0]:
+                        minimum = minimumLeft
+                    # IF MINRIGHT'S X IS SMALLER THAN MINLEFT'S X
+                    else:
+                        minimum = minimumRight
+                
+                # IF IN Y-DIMENSION
                 else:
-                    minimum = min(minimumLeft.value, minimumRight.value, key=lambda n: (n[1], -n[0]))
+                    # IF MINLEFT'S Y IS SMALLER THAN MINRIGHT'S Y
+                    if minimumLeft.value[1] < minimumRight.value[1]:
+                        minimum = minimumLeft
+                    # IF MINRIGHT'S Y IS SMALLER THAN MINLEFT'S Y
+                    else:
+                        minimum = minimumRight
 
             elif minimumLeft:
                 minimum = minimumLeft
@@ -166,5 +187,22 @@ tree.insert((60,80))
 tree.insert((1,10)) 
 tree.insert((50,50))   
 tree.visualize()
-print("The minimum point in the x-dimension is: ", tree.findMin(tree.root, tree.dimensions[0]))
-print("The minimum point in the y-dimension is: ", tree.findMin(tree.root, tree.dimensions[1]))
+print("The minimum point in the x-dimension is: {} \n".format(tree.findMin(tree.dimensions[0])))
+print("The minimum point in the y-dimension is: {} \n".format(tree.findMin(tree.dimensions[1])))
+
+tree2 = KDTree()
+tree2.insert((2,3))
+tree2.insert((1,3))
+tree2.insert((4,2))
+tree2.insert((4,5))
+tree2.insert((3,3))
+tree2.insert((4,4))   
+tree2.visualize()
+print("The minimum point in the x-dimension is: {} \n".format(tree2.findMin(tree2.dimensions[0])))
+print("The minimum point in the y-dimension is: {} \n".format(tree2.findMin(tree2.dimensions[1])))
+tree2.insert((1,5))
+tree2.insert((3,1))
+tree2.insert((3,10))
+tree2.visualize()
+print("The minimum point in the x-dimension is: {} \n".format(tree2.findMin(tree2.dimensions[0])))
+print("The minimum point in the y-dimension is: {} \n".format(tree2.findMin(tree2.dimensions[1])))
