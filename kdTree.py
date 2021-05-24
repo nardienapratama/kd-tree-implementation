@@ -1,8 +1,10 @@
 # References Used for Guidance: 
 ## https://runestone.academy/runestone/books/published/pythonds/Trees/SearchTreeImplementation.html
 
+from rectangle import Rectangle
 from myNode import MyNode
 from ppbtree import *
+import math
 
 
 class KDTree:
@@ -23,7 +25,8 @@ class KDTree:
         '''
         # IF THERE IS NO ROOT NODE YET, SET CURRENT POINT AS ROOT NODE
         if self.root is None:
-            self.root = MyNode(point, self.dimensions[0], 1)
+            rectangle = Rectangle(-math.inf, -math.inf, math.inf, math.inf)
+            self.root = MyNode(point, self.dimensions[0], 1, rectangle)
             self.treeHeight = 1
         else:
             self.insertPoint(self.root, point, 0)
@@ -39,34 +42,56 @@ class KDTree:
         # IF AXIS IS DIMENSION 0 ('X')
         if currentNode.getAxis() == self.dimensions[0]:
             # IF CURRENT NODE HAS A CHILD SUBTREE
-            if point[self.dimensions[0]] >= currentNode.getXVal():
+            if point[self.dimensions[0]] >= currentNode.getX():
                 if currentNode.right:
                     self.insertPoint(currentNode.right, point, heightCount)
                 else:
+                    # RY
                     heightCount += 1
-                    currentNode.right = MyNode(point, self.dimensions[1], heightCount)
+                    rectangle = currentNode.getRectangle()
+                    
+                    newRectangle = Rectangle(currentNode.getX(), rectangle.getY1(), 
+                                            rectangle.getX2(), rectangle.getY2())
+                    currentNode.right = MyNode(point, self.dimensions[1], heightCount, newRectangle)
             else:
                 if currentNode.left:
                     self.insertPoint(currentNode.left, point, heightCount)
                 else:
+                    # LY
                     heightCount += 1
-                    currentNode.left = MyNode(point, self.dimensions[1], heightCount)
+                    rectangle = currentNode.getRectangle()
+                    newRectangle = Rectangle(rectangle.getX1(), rectangle.getY1(), 
+                                            currentNode.getX(), rectangle.getY2())
+                    currentNode.left = MyNode(point, self.dimensions[1], heightCount, newRectangle)
+                    
                 
 
         # IF AXIS IS DIMENSION 1 ('Y') 
         else:
-            if point[self.dimensions[1]] >= currentNode.getYVal():
+            if point[self.dimensions[1]] >= currentNode.getY():
                 if currentNode.right:
                     self.insertPoint(currentNode.right, point, heightCount)
                 else:
+                    # RX
                     heightCount += 1
-                    currentNode.right = MyNode(point, self.dimensions[0], heightCount)
+                    rectangle = currentNode.getRectangle()
+                    newRectangle = Rectangle(rectangle.getX1(), currentNode.getY(), 
+                                            rectangle.getX2(), rectangle.getY2())
+                    currentNode.right = MyNode(point, self.dimensions[0], heightCount, newRectangle)
+                    
             
             else:
                 if currentNode.left:
                     self.insertPoint(currentNode.left, point, heightCount)
                 else:
-                    currentNode.left = MyNode(point, self.dimensions[0], heightCount)
+                    # LX
+                    # MODIFY CURRENT NODE'S RECTANGLE TO CORRESPOND TO THE AREA
+                    # OF THE NEW NODE ABOUT TO BE INSERTED
+                    rectangle = currentNode.getRectangle()
+                    
+                    newRectangle = Rectangle(rectangle.getX1(), rectangle.getY1(), 
+                                            rectangle.getX2(), currentNode.getY())
+                    currentNode.left = MyNode(point, self.dimensions[0], heightCount, newRectangle)
 
         if heightCount > self.treeHeight:
             self.treeHeight = heightCount
@@ -86,7 +111,8 @@ class KDTree:
 
 
     def _visualize(self, currentNode, parentNode):
-        treeNode = Node(currentNode.value)
+        value = str(currentNode.value) + " Rect: " + currentNode.rectangle.__str__()
+        treeNode = Node(value)
 
         if not currentNode.hasChild:
             return treeNode
@@ -157,14 +183,20 @@ class KDTree:
             else:
                 minimum = currentNode
         
+        # Compare the found minimum with the current node
+        # If current node has smaller value in dim dimension, then current node is minimum.
+        if currentNode.value[dim] < minimum.value[dim]:
+            minimum = currentNode
+
+        # Compare the found minimum with the current node
+        # If current node has exact same value in dim dimension as the minimum node,
+        # and the current node's other value is smaller than 
+        if currentNode.value[dim] == minimum.value[dim] and currentNode.value[dim^1] < minimum.value[dim^1]:
+            minimum = currentNode
         return minimum
 
-
-
-
-
-    
     def delete(self):
+
         return
     
     def performRangeSearch(self, range):
@@ -192,7 +224,7 @@ print("The minimum point in the y-dimension is: {} \n".format(tree.findMin(tree.
 
 tree2 = KDTree()
 tree2.insert((2,3))
-tree2.insert((1,3))
+tree2.insert((1,5))
 tree2.insert((4,2))
 tree2.insert((4,5))
 tree2.insert((3,3))
@@ -200,9 +232,44 @@ tree2.insert((4,4))
 tree2.visualize()
 print("The minimum point in the x-dimension is: {} \n".format(tree2.findMin(tree2.dimensions[0])))
 print("The minimum point in the y-dimension is: {} \n".format(tree2.findMin(tree2.dimensions[1])))
-tree2.insert((1,5))
+tree2.insert((1,3))
 tree2.insert((3,1))
 tree2.insert((3,10))
 tree2.visualize()
 print("The minimum point in the x-dimension is: {} \n".format(tree2.findMin(tree2.dimensions[0])))
 print("The minimum point in the y-dimension is: {} \n".format(tree2.findMin(tree2.dimensions[1])))
+
+
+# tree3 = KDTree()
+# tree3.insert((35,60))
+# tree3.insert((20,45))
+# tree3.insert((85,40))
+# tree3.insert((10,35))
+# tree3.insert((65,30))
+# tree3.insert((50,85))  
+# tree3.insert((20,20))  
+# tree3.insert((70,20))   
+# tree3.insert((60,90))  
+# tree3.insert((75,60))  
+# tree3.insert((65,65))  
+# tree3.insert((90,55))  
+# tree3.visualize()
+# print(tree3.root.right.right)
+# print("min of (85,40): {}".format(tree3._findMin(tree3.root.right, 0).value))
+# print("min of (60,90): {}".format(tree3._findMin(tree3.root.right.right.right, 0).value))
+# print("min of (75,60): {}".format(tree3._findMin(tree3.root.right.right.right.left, 1).value))
+
+# tree4 = KDTree()
+# tree4.insert((35,60))
+# tree4.insert((20,45))
+# tree4.insert((85,40))
+# tree4.insert((10,35))
+# tree4.insert((65,30))
+# tree4.insert((50,85))  
+# tree4.insert((20,20))  
+# tree4.insert((70,20))   
+# tree4.insert((60,90))  
+# tree4.insert((75,50))  
+# tree4.insert((65,65))  
+# tree4.insert((90,55))  
+# tree4.visualize()
