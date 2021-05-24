@@ -1,11 +1,11 @@
-class MyNode():
-    def __init__(self, point, axis, height):
+class MyNode:
+    def __init__(self, point, axis, height, rectangle):
         self.value = point
         self.left = None
         self.right = None
         self.parent = None
         self.axis = axis
-        self.rectangle = None
+        self.rectangle = rectangle
         self.height = height
 
     def __repr__(self) -> str:
@@ -16,6 +16,9 @@ class MyNode():
 
     def hasChild(self):
         return self.right or self.left
+
+    def getRectangle(self):
+        return self.rectangle
 
     def getHeight(self):
         return self.height
@@ -29,10 +32,10 @@ class MyNode():
     def getValue(self):
         return self.value
 
-    def getXVal(self):
+    def getX(self):
         return self.value[0]
 
-    def getYVal(self):
+    def getY(self):
         return self.value[1]
     
     def getAxis(self):
