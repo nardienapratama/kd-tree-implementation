@@ -1,5 +1,7 @@
 # References Used for Guidance: 
 ## https://runestone.academy/runestone/books/published/pythonds/Trees/SearchTreeImplementation.html
+## DELETION ALGORITHM BASED ON GEEKS FOR GEEKS' PSEUDOCODE (CODE NOT COPIED AND PASTED): 
+### https://www.geeksforgeeks.org/k-dimensional-tree-set-3-delete/
 
 from rectangle import Rectangle
 from myNode import MyNode
@@ -29,10 +31,12 @@ class KDTree:
             self.root = MyNode(point, self.dimensions[0], 1, rectangle)
             self.treeHeight = 1
         else:
-            self.insertPoint(self.root, point, 0)
+            self._insert(self.root, point, 0)
+
+        print("Inserting point: {}".format(point))
             
 
-    def insertPoint(self, currentNode, point, heightCount):
+    def _insert(self, currentNode, point, heightCount):
         '''
         This method is called by the insert method above. This method goes down the tree recursively 
         to insert the point in the correct location in the kd-Tree.
@@ -44,7 +48,7 @@ class KDTree:
             # IF CURRENT NODE HAS A CHILD SUBTREE
             if point[self.dimensions[0]] >= currentNode.getX():
                 if currentNode.right:
-                    self.insertPoint(currentNode.right, point, heightCount)
+                    self._insert(currentNode.right, point, heightCount)
                 else:
                     # RY
                     heightCount += 1
@@ -55,7 +59,7 @@ class KDTree:
                     currentNode.right = MyNode(point, self.dimensions[1], heightCount, newRectangle)
             else:
                 if currentNode.left:
-                    self.insertPoint(currentNode.left, point, heightCount)
+                    self._insert(currentNode.left, point, heightCount)
                 else:
                     # LY
                     heightCount += 1
@@ -70,7 +74,7 @@ class KDTree:
         else:
             if point[self.dimensions[1]] >= currentNode.getY():
                 if currentNode.right:
-                    self.insertPoint(currentNode.right, point, heightCount)
+                    self._insert(currentNode.right, point, heightCount)
                 else:
                     # RX
                     heightCount += 1
@@ -82,7 +86,7 @@ class KDTree:
             
             else:
                 if currentNode.left:
-                    self.insertPoint(currentNode.left, point, heightCount)
+                    self._insert(currentNode.left, point, heightCount)
                 else:
                     # LX
                     # MODIFY CURRENT NODE'S RECTANGLE TO CORRESPOND TO THE AREA
@@ -96,6 +100,56 @@ class KDTree:
         if heightCount > self.treeHeight:
             self.treeHeight = heightCount
 
+    
+
+    def delete(self, point):
+        '''
+        This method deletes a point from the kd-tree.
+        '''
+        self.root = self._delete(self.root, point)
+        print("Deleting point: {}".format(point))
+
+    # BASED ON GEEKS FOR GEEKS' DELETE ALGORITHM PSEUDOCODE
+    def _delete(self, currentNode, point):
+        # IF CURRENTNODE CONTAINS POINT TO BE DELETED
+        if currentNode.value[0] == point[0] and currentNode.value[1] == point[1]:
+            # TODO: DO DELETION ALGORITHM
+            # 1. IF NODE IS A LEAF NODE, DELETE IT
+            if not currentNode.hasChild():
+                return None
+            # 2. IF NODE HAS RIGHT CHILD AS NOT NULL
+            if currentNode.hasRightChild():
+                # 2.1 FIND MIN OF CURRENT NODE'S DIMENSION IN RIGHT SUBTREE
+                minimumNode = self._findMin(currentNode.right, currentNode.getAxis())
+                # 2.2 REPLACE CURRENT NODE WITH ABOVE FOUND MINIMUM (2.1) AND RECURSIVELY DELETE 
+                # MINIMUM IN RIGHT SUBTREE
+                currentNode.value = minimumNode.value
+                currentNode.right = self._delete(currentNode.right, minimumNode.value)
+                
+            # 3. ELSE IF NODE HAS LEFT CHILD AS NOT NULL
+            else:
+                # 3.1 FIND MIN OF CURRENT NODE'S DIMENSION IN LEFT SUBTREE
+                minimumNode = self._findMin(currentNode.left, currentNode.getAxis())
+                # 3.2 REPLACE CURRENT NODE WITH ABOVE FOUND MINIMUM (3.1) AND RECURSIVELY DELETE 
+                # MINIMUM IN LEFT SUBTREE
+                currentNode.value = minimumNode.value
+                minimumNode = self._delete(currentNode.left, minimumNode.value)
+                # 3.3 MAKE NEW LEFT SUBTREE AS RIGHT CHILD OF CURRENT NODE
+                currentNode.right = minimumNode
+                currentNode.left = None
+               
+        # IF CURRENTNODE DOESN'T CONTAIN POINT TO BE DELETED
+        else:
+            # 1. IF NODE TO BE DELETED IS SMALLER THAN CURRENTNODE ON CURRENT DIMENSION, RECUR 
+            # FOR LEFT SUBTREE
+            if point[currentNode.getAxis()] < currentNode.value[currentNode.getAxis()]:
+                currentNode.left = self._delete(currentNode.left, point)
+            # 2. ELSE, RECUR FOR RIGHT SUBTREE
+            else:
+                currentNode.right = self._delete(currentNode.right, point)
+    
+        return currentNode
+
     def visualize(self):
         '''
         This method is used to visualize the kd-Tree horizontally. 
@@ -103,15 +157,16 @@ class KDTree:
         https://github.com/clemtoy/pptree
         '''
 
-        root = self._visualize(self.root, None)
+        root = self._visualize(self.root)
         print("\nVISUALIZATION OF KD-TREE: \n")
         print_tree(root, nameattr='value')
         print("\n")
         print("\n")
 
 
-    def _visualize(self, currentNode, parentNode):
-        value = str(currentNode.value) + " Rect: " + currentNode.rectangle.__str__()
+    def _visualize(self, currentNode):
+        # value = str(currentNode.value) + " Rect: " + currentNode.rectangle.__str__()
+        value = str(currentNode.value)
         treeNode = Node(value)
 
         if not currentNode.hasChild:
@@ -120,11 +175,11 @@ class KDTree:
             if currentNode.left:
                 # The tree visualizer's left child goes up, so we make our 
                 # left nodes correspond to the visualizer's right child instead (it'll go down).
-                treeNode.right = self._visualize(currentNode.left, treeNode)
+                treeNode.right = self._visualize(currentNode.left)
             if currentNode.right:
                 # The tree visualizer's right child goes down, so we make our 
                 # right nodes correspond to the visualizer's left child instead (it'll go up).
-                treeNode.left = self._visualize(currentNode.right, treeNode)
+                treeNode.left = self._visualize(currentNode.right)
             return treeNode
 
     def findMin(self, dim):
@@ -194,10 +249,6 @@ class KDTree:
         if currentNode.value[dim] == minimum.value[dim] and currentNode.value[dim^1] < minimum.value[dim^1]:
             minimum = currentNode
         return minimum
-
-    def delete(self):
-
-        return
     
     def performRangeSearch(self, range):
         return
@@ -209,51 +260,77 @@ class KDTree:
         return
 
 tree = KDTree()
-tree.insert((51,75))
-tree.insert((25,40))
+tree.insert((30,40))
+tree.insert((5,25))
 tree.insert((70,70))
-tree.insert((10,30))
-tree.insert((35,90))
-tree.insert((55,1)) 
-tree.insert((60,80))
-tree.insert((1,10)) 
-tree.insert((50,50))   
+tree.insert((10,12))
+tree.insert((50,30))
+tree.insert((35,45))   
 tree.visualize()
-print("The minimum point in the x-dimension is: {} \n".format(tree.findMin(tree.dimensions[0])))
-print("The minimum point in the y-dimension is: {} \n".format(tree.findMin(tree.dimensions[1])))
+tree.delete((30,40))
+tree.visualize()
 
-tree2 = KDTree()
-tree2.insert((2,3))
-tree2.insert((1,5))
-tree2.insert((4,2))
-tree2.insert((4,5))
-tree2.insert((3,3))
-tree2.insert((4,4))   
-tree2.visualize()
-print("The minimum point in the x-dimension is: {} \n".format(tree2.findMin(tree2.dimensions[0])))
-print("The minimum point in the y-dimension is: {} \n".format(tree2.findMin(tree2.dimensions[1])))
-tree2.insert((1,3))
-tree2.insert((3,1))
-tree2.insert((3,10))
-tree2.visualize()
-print("The minimum point in the x-dimension is: {} \n".format(tree2.findMin(tree2.dimensions[0])))
-print("The minimum point in the y-dimension is: {} \n".format(tree2.findMin(tree2.dimensions[1])))
+tree = KDTree()
+tree.insert((30,40))
+tree.insert((5,25))
+tree.insert((70,70))
+tree.insert((10,12))
+tree.insert((50,30))
+tree.insert((35,45))   
+tree.visualize()
+tree.delete((70,70))
+tree.visualize()
 
 
-# tree3 = KDTree()
-# tree3.insert((35,60))
-# tree3.insert((20,45))
-# tree3.insert((85,40))
-# tree3.insert((10,35))
-# tree3.insert((65,30))
-# tree3.insert((50,85))  
-# tree3.insert((20,20))  
-# tree3.insert((70,20))   
-# tree3.insert((60,90))  
-# tree3.insert((75,60))  
-# tree3.insert((65,65))  
-# tree3.insert((90,55))  
-# tree3.visualize()
+# tree = KDTree()
+# tree.insert((51,75))
+# tree.insert((25,40))
+# tree.insert((70,70))
+# tree.insert((10,30))
+# tree.insert((35,90))
+# tree.insert((55,1)) 
+# tree.insert((60,80))
+# tree.insert((1,10)) 
+# tree.insert((50,50))   
+# tree.visualize()
+# print("The minimum point in the x-dimension is: {} \n".format(tree.findMin(tree.dimensions[0])))
+# print("The minimum point in the y-dimension is: {} \n".format(tree.findMin(tree.dimensions[1])))
+
+# tree2 = KDTree()
+# tree2.insert((2,3))
+# tree2.insert((1,5))
+# tree2.insert((4,2))
+# tree2.insert((4,5))
+# tree2.insert((3,3))
+# tree2.insert([4,4])   
+# tree2.visualize()
+# print("The minimum point in the x-dimension is: {} \n".format(tree2.findMin(tree2.dimensions[0])))
+# print("The minimum point in the y-dimension is: {} \n".format(tree2.findMin(tree2.dimensions[1])))
+# tree2.insert((1,3))
+# tree2.insert((3,1))
+# tree2.insert((3,10))
+# tree2.visualize()
+# print("The minimum point in the x-dimension is: {} \n".format(tree2.findMin(tree2.dimensions[0])))
+# print("The minimum point in the y-dimension is: {} \n".format(tree2.findMin(tree2.dimensions[1])))
+
+
+tree3 = KDTree()
+tree3.insert((35,60))
+tree3.insert((20,45))
+tree3.insert((85,40))
+tree3.insert((10,35))
+tree3.insert((65,30))
+tree3.insert((50,85))  
+tree3.insert((20,20))  
+tree3.insert((70,20))   
+tree3.insert((60,90))  
+tree3.insert((75,60))  
+tree3.insert((65,65))  
+tree3.insert((90,55))  
+tree3.visualize()
+tree3.delete((35,60))
+tree3.visualize()
+
 # print(tree3.root.right.right)
 # print("min of (85,40): {}".format(tree3._findMin(tree3.root.right, 0).value))
 # print("min of (60,90): {}".format(tree3._findMin(tree3.root.right.right.right, 0).value))
