@@ -14,8 +14,17 @@ class MyNode:
     def __str__(self) -> str:
         return "<NODE> - {}".format(self.getValue())
 
+    def __eq__(self, o: object) -> bool:
+        return self.value[0] == o.value[0] and self.value[1] == o.value[1]
+
     def hasChild(self):
         return self.right or self.left
+
+    def hasRightChild(self):
+        return True if self.right else False
+
+    def hasLeftChild(self):
+        return True if self.left else False
 
     def getRectangle(self):
         return self.rectangle
