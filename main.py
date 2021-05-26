@@ -1,13 +1,13 @@
 from kdTree import *
 
 
-atree = insertKDTree("kdtree\circle4.txt")
+atree = createKDTreeFromFile("kdtree\circle4.txt")
 atree.visualize()
-atree = insertKDTree("stackoverflow-test.txt")
+atree = createKDTreeFromFile("stackoverflow-test.txt")
 atree.visualize()
-atree = insertKDTree("kdtree\input100.txt")
+atree = createKDTreeFromFile("kdtree\input100.txt")
 atree.visualize()
-atree = insertKDTree("kdtree\input5-2.txt")
+atree = createKDTreeFromFile("kdtree\input5-2.txt")
 atree.visualize()
 
 # tree = KDTree()
