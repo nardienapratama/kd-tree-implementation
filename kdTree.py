@@ -325,24 +325,73 @@ class KDTree:
         if currentNode.hasRightChild():
             nearestPoints = self._performKNNSearch(currentNode.right, targetPoint, nearestPoints, k)
 
-
         return nearestPoints
 
-tree = KDTree()
-tree.insert((30,40))
-tree.insert((5,25))
-tree.insert((70,70))
-tree.insert((10,12))
-tree.insert((50,30))
-tree.insert((35,45))   
-tree.visualize()
-tree.delete((30,40))
-tree.visualize()
+def insertLinearSearch(inputFile):
+    with open(inputFile, 'r') as f:
+        contents = f.readlines()
+    linearSearchArray = []
+    for line in contents:
+        point = line.split()
+        point[0] = float(point[0])
+        point[1] = float(point[1])
+        linearSearchArray.append((point[0], point[1]))
+    return linearSearchArray
 
-tree = KDTree()
-rectangle = Rectangle(1, 1, 4, 3)
-print(tree._checkRectIntersection(rectangle, [(0,0), (0.5,0.5)]))
-print(tree._checkPointInRect((1,0),  [(1,1), (4,3)]))
+def insertKDTree(inputFile):
+    with open(inputFile, 'r') as f:
+        contents = f.readlines()
+    
+    points = []
+    for line in contents:
+        point = line.split()
+        point[0] = float(point[0])
+        point[1] = float(point[1])
+        points.append((point[0], point[1]))
+    
+    tree = KDTree()
+    modifiedTree = _insertKDTree(tree, points, 0)
+    
+    return modifiedTree
+
+# Based on wikipedia's construction algorithm
+def _insertKDTree(tree, pointsList, depth):
+    if not pointsList:
+        return None
+    else:
+        axis = depth % 2
+        if axis == 0:
+            sortedList = sorted(pointsList, key=lambda x:x[0])
+        else:
+            sortedList = sorted(pointsList, key=lambda x:x[1])
+
+        medianIndex = len(sortedList) // 2
+        median = sortedList[medianIndex]
+        tree.insert(median)
+
+        _insertKDTree(tree, sortedList[:medianIndex], depth+1)
+        _insertKDTree(tree, sortedList[medianIndex+1::], depth+1)
+
+    return tree
+        
+
+
+
+# tree = KDTree()
+# tree.insert((30,40))
+# tree.insert((5,25))
+# tree.insert((70,70))
+# tree.insert((10,12))
+# tree.insert((50,30))
+# tree.insert((35,45))   
+# tree.visualize()
+# tree.delete((30,40))
+# tree.visualize()
+
+# tree = KDTree()
+# rectangle = Rectangle(1, 1, 4, 3)
+# print(tree._checkRectIntersection(rectangle, [(0,0), (0.5,0.5)]))
+# print(tree._checkPointInRect((1,0),  [(1,1), (4,3)]))
 
 # tree = KDTree()
 # tree.insert((30,40))
@@ -354,7 +403,19 @@ print(tree._checkPointInRect((1,0),  [(1,1), (4,3)]))
 # tree.visualize()
 # tree.delete((70,70))
 # tree.visualize()
-
+# tree2 = KDTree()
+# tree2.insert((2,3))
+# tree2.insert((1,5))
+# tree2.insert((4,2))
+# tree2.insert((4,5))
+# tree2.insert((3,3))
+# tree2.insert([4,4])   
+# tree2.visualize()
+# print(tree2.performRangeSearch([(1.2,2.5), (3.2, 3.5)]))
+# print(tree2.performRangeSearch([(3,1), (5,3)]))
+# print(tree2.performKNNSearch((2,3), k=1))
+# print(tree2.performKNNSearch((2,3), k=2))
+# print(tree2.performKNNSearch((2,3), k=3))
 
 # tree = KDTree()
 # tree.insert((51,75))
@@ -370,19 +431,7 @@ print(tree._checkPointInRect((1,0),  [(1,1), (4,3)]))
 # print("The minimum point in the x-dimension is: {} \n".format(tree.findMin(tree.dimensions[0])))
 # print("The minimum point in the y-dimension is: {} \n".format(tree.findMin(tree.dimensions[1])))
 
-tree2 = KDTree()
-tree2.insert((2,3))
-tree2.insert((1,5))
-tree2.insert((4,2))
-tree2.insert((4,5))
-tree2.insert((3,3))
-tree2.insert([4,4])   
-tree2.visualize()
-print(tree2.performRangeSearch([(1.2,2.5), (3.2, 3.5)]))
-print(tree2.performRangeSearch([(3,1), (5,3)]))
-print(tree2.performKNNSearch((2,3), k=1))
-print(tree2.performKNNSearch((2,3), k=2))
-print(tree2.performKNNSearch((2,3), k=3))
+
 # linearSearch = [(2,3), ]
 # print("The minimum point in the x-dimension is: {} \n".format(tree2.findMin(tree2.dimensions[0])))
 # print("The minimum point in the y-dimension is: {} \n".format(tree2.findMin(tree2.dimensions[1])))
