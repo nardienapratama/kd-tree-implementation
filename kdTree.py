@@ -249,14 +249,45 @@ class KDTree:
         if currentNode.value[dim] == minimum.value[dim] and currentNode.value[dim^1] < minimum.value[dim^1]:
             minimum = currentNode
         return minimum
-    
-    def performRangeSearch(self, range):
-        return
-    
-    def performKNNSearch(self, radius):
-        return
 
-    def drawTree(self):
+    def performRangeSearch(self, queryBox):
+        # START AT ROOT
+        # RECURSIVELY SEARCH FOR POINTS IN BOTH SUBTREES
+        # PRUNE: IF QUERY RECTANGLE DOESN'T INTERSECT THE RECTANGLE CORRESPONDING
+        # A NODE, NO NEED TO EXPLORE THAT NODE AND ITS SUBTREES
+        result = self._performRangeSearch(self.root, queryBox, [])
+        return result
+    
+    def _performRangeSearch(self, currentNode, queryBox, result):
+        # CHECK RECTANGLE INTERSECTION
+        # IF INTERSECTS, CHECK NODE AND SUBTREES
+        if self._checkRectIntersection(currentNode.rectangle, queryBox):
+            # CHECK IF NODE IS IN QUERY BOX
+            if self._checkPointInRect(currentNode.value, queryBox):
+                # TODO: ADD POINT TO RESULT LIST
+                result.append(currentNode.value)
+
+            if currentNode.hasRightChild():
+                # TRAVERSE DOWN RIGHT SUBTREE
+                result = self._performRangeSearch(currentNode.right, queryBox, result)
+
+            if currentNode.hasLeftChild():
+                # TRAVERSE DOWN LEFT SUBTREE
+                result = self._performRangeSearch(currentNode.left, queryBox, result)
+
+        return result
+
+    def _checkRectIntersection(self, rectangleObj, queryBox):
+        # CHECK THE FOLLOWING CONDITIONS FROM THE SLIDE
+        if ((rectangleObj.getY1() <= queryBox[1][1]) and
+        (queryBox[0][1] <= rectangleObj.getY2()) and 
+        (queryBox[0][0] <= rectangleObj.getX2()) and 
+        (rectangleObj.getX1() <= queryBox[1][0])):
+            return True
+        else:
+            return False
+
+    def performKNNSearch(self, radius):
         return
 
 tree = KDTree()
@@ -271,15 +302,19 @@ tree.delete((30,40))
 tree.visualize()
 
 tree = KDTree()
-tree.insert((30,40))
-tree.insert((5,25))
-tree.insert((70,70))
-tree.insert((10,12))
-tree.insert((50,30))
-tree.insert((35,45))   
-tree.visualize()
-tree.delete((70,70))
-tree.visualize()
+rectangle = Rectangle(1, 1, 4, 3)
+print(checkRectIntersection(rectangle, [(4,-2), (5,-1)]))
+
+# tree = KDTree()
+# tree.insert((30,40))
+# tree.insert((5,25))
+# tree.insert((70,70))
+# tree.insert((10,12))
+# tree.insert((50,30))
+# tree.insert((35,45))   
+# tree.visualize()
+# tree.delete((70,70))
+# tree.visualize()
 
 
 # tree = KDTree()
@@ -314,22 +349,22 @@ tree.visualize()
 # print("The minimum point in the y-dimension is: {} \n".format(tree2.findMin(tree2.dimensions[1])))
 
 
-tree3 = KDTree()
-tree3.insert((35,60))
-tree3.insert((20,45))
-tree3.insert((85,40))
-tree3.insert((10,35))
-tree3.insert((65,30))
-tree3.insert((50,85))  
-tree3.insert((20,20))  
-tree3.insert((70,20))   
-tree3.insert((60,90))  
-tree3.insert((75,60))  
-tree3.insert((65,65))  
-tree3.insert((90,55))  
-tree3.visualize()
-tree3.delete((35,60))
-tree3.visualize()
+# tree3 = KDTree()
+# tree3.insert((35,60))
+# tree3.insert((20,45))
+# tree3.insert((85,40))
+# tree3.insert((10,35))
+# tree3.insert((65,30))
+# tree3.insert((50,85))  
+# tree3.insert((20,20))  
+# tree3.insert((70,20))   
+# tree3.insert((60,90))  
+# tree3.insert((75,60))  
+# tree3.insert((65,65))  
+# tree3.insert((90,55))  
+# tree3.visualize()
+# tree3.delete((35,60))
+# tree3.visualize()
 
 # print(tree3.root.right.right)
 # print("min of (85,40): {}".format(tree3._findMin(tree3.root.right, 0).value))
