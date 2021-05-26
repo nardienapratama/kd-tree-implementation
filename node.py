@@ -1,4 +1,4 @@
-class Node:
+class MyNode:
     def __init__(self, point, axis, height, rectangle):
         self.value = point
         self.left = None
