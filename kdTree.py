@@ -4,10 +4,10 @@
 ### https://www.geeksforgeeks.org/k-dimensional-tree-set-3-delete/
 
 from rectangle import Rectangle
-from node import Node
+from node import MyNode
 from ppbtree import *
 from operator import itemgetter
-import math
+import math, time
 
 
 class KDTree:
@@ -29,7 +29,7 @@ class KDTree:
         # IF THERE IS NO ROOT NODE YET, SET CURRENT POINT AS ROOT NODE
         if self.root is None:
             rectangle = Rectangle(-math.inf, -math.inf, math.inf, math.inf)
-            self.root = Node(point, self.dimensions[0], 1, rectangle)
+            self.root = MyNode(point, self.dimensions[0], 1, rectangle)
             self.treeHeight = 1
         else:
             self._insert(self.root, point, 0)
@@ -57,7 +57,7 @@ class KDTree:
                     
                     newRectangle = Rectangle(currentNode.getX(), rectangle.getY1(), 
                                             rectangle.getX2(), rectangle.getY2())
-                    currentNode.right = Node(point, self.dimensions[1], heightCount, newRectangle)
+                    currentNode.right = MyNode(point, self.dimensions[1], heightCount, newRectangle)
             else:
                 if currentNode.left:
                     self._insert(currentNode.left, point, heightCount)
@@ -67,7 +67,7 @@ class KDTree:
                     rectangle = currentNode.getRectangle()
                     newRectangle = Rectangle(rectangle.getX1(), rectangle.getY1(), 
                                             currentNode.getX(), rectangle.getY2())
-                    currentNode.left = Node(point, self.dimensions[1], heightCount, newRectangle)
+                    currentNode.left = MyNode(point, self.dimensions[1], heightCount, newRectangle)
                     
                 
 
@@ -82,7 +82,7 @@ class KDTree:
                     rectangle = currentNode.getRectangle()
                     newRectangle = Rectangle(rectangle.getX1(), currentNode.getY(), 
                                             rectangle.getX2(), rectangle.getY2())
-                    currentNode.right = Node(point, self.dimensions[0], heightCount, newRectangle)
+                    currentNode.right = MyNode(point, self.dimensions[0], heightCount, newRectangle)
                     
             
             else:
@@ -96,7 +96,7 @@ class KDTree:
                     
                     newRectangle = Rectangle(rectangle.getX1(), rectangle.getY1(), 
                                             rectangle.getX2(), currentNode.getY())
-                    currentNode.left = Node(point, self.dimensions[0], heightCount, newRectangle)
+                    currentNode.left = MyNode(point, self.dimensions[0], heightCount, newRectangle)
 
         if heightCount > self.treeHeight:
             self.treeHeight = heightCount
@@ -265,12 +265,15 @@ class KDTree:
         return False
 
     def performRangeSearch(self, queryBox):
-        print("KD-TREE: Performing Range Search with Query Box {}:".format(queryBox))
+        print("KD-TREE: Range Search with Query Box {}:".format(queryBox))
         # START AT ROOT
         # RECURSIVELY SEARCH FOR POINTS IN BOTH SUBTREES
         # PRUNE: IF QUERY RECTANGLE DOESN'T INTERSECT THE RECTANGLE CORRESPONDING
         # A NODE, NO NEED TO EXPLORE THAT NODE AND ITS SUBTREES
+        startTime = round(time.time() *1000)
         result = self._performRangeSearch(self.root, queryBox, [])
+        endTime = round(time.time() *1000)
+        print("Time Elapsed for KD-TREE Range Search: {} seconds".format(endTime - startTime))
         return result
     
     def _performRangeSearch(self, currentNode, queryBox, result):
@@ -293,11 +296,15 @@ class KDTree:
         return result
 
     def performKNNSearch(self, targetPoint, k=1):
-        print("KD-TREE: Performing KNN Search at point {} with k = {}:".format(targetPoint, k))
-        result = self._performKNNSearch(self.root, targetPoint, [], k)
+        print("KD-TREE: KNN Search at point {} with k = {}:".format(targetPoint, k))
+        startTime = round(time.time() *1000)
+        result = self._performKNNSearch(self.root, targetPoint, {}, k)
+        endTime = round(time.time() *1000)
+        print("Time Elapsed for KD-TREE kNN Search: {} seconds".format(endTime - startTime))
         finalResult = []
-        for i in result:
-            finalResult.append(i[0])
+        for key, _ in result:
+            finalResult.append(key)
+
         return finalResult
 
     def _performKNNSearch(self, currentNode, targetPoint, nearestPoints, k=1):
@@ -307,14 +314,14 @@ class KDTree:
         # IF NO POINTS IN LIST YET, APPEND
         if currentNode.value[0] != targetPoint[0] or currentNode.value[1] != targetPoint[1]:
             if len(nearestPoints) < k:
-                nearestPoints.append((currentNode.value, distance))
+                nearestPoints[currentNode.value] = distance
             else:
                 # OUT OF THE K SMALLEST TUPLES, FIND THE ONE WITH BIGGEST DISTANCE
-                nearestPointsMax = max(nearestPoints, key=itemgetter(1))
+                nearestPointsMax = max(nearestPoints.items(), key=itemgetter(1))
                 # COMPARE CURRENT DISTANCE TO DISTANCE IN THE nearestPointsMax
                 if distance < nearestPointsMax[1]:
-                    nearestPoints.remove(nearestPointsMax)
-                    nearestPoints.append((currentNode.value, distance))
+                    del nearestPoints[nearestPointsMax[0]]
+                    nearestPoints[currentNode.value] = distance
         if currentNode.hasLeftChild():
             nearestPoints = self._performKNNSearch(currentNode.left, targetPoint, nearestPoints, k)
         if currentNode.hasRightChild():
