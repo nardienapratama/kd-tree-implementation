@@ -1,14 +1,12 @@
 # References Used for Guidance: 
 ## https://runestone.academy/runestone/books/published/pythonds/Trees/SearchTreeImplementation.html
-## DELETION ALGORITHM BASED ON GEEKS FOR GEEKS' PSEUDOCODE (CODE NOT COPIED AND PASTED): 
+## DELETION ALGORITHM BASED ON GEEKS FOR GEEKS' ALGORITHM DESCRIPTION (CODE NOT COPIED AND PASTED): 
 ### https://www.geeksforgeeks.org/k-dimensional-tree-set-3-delete/
 
 from rectangle import Rectangle
 from myNode import MyNode
 from ppbtree import *
 import math
-import matplotlib.pyplot as plt
-from matplotlib.patches import Rectangle as Rect
 
 
 class KDTree:
@@ -295,8 +293,32 @@ class KDTree:
             return True
         return False
 
-    def performKNNSearch(self, radius):
-        return
+    def distanceTo(self, point1, point2):
+        result = math.sqrt((point1[0]-point2[0])**2 + (point1[1]-point2[1])**2)
+        return result
+
+    def performKNNSearch(self, targetPoint, k=1):
+        result = self._performKNNSearch(self.root, targetPoint, [])
+        return result
+
+    def _performKNNSearch(self, currentNode, targetPoint, nearestPoints):
+        distance = self.distanceTo(currentNode.value, targetPoint)
+        # if distance <= radius:
+        # TODO: add {currentNode : distance} to nearestPoints dictionary
+        # IF NO POINTS IN LIST YET, APPEND
+        if currentNode.value[0] != targetPoint[0] or currentNode.value[1] != targetPoint[1]:
+            if not nearestPoints:
+                nearestPoints = (distance, currentNode.value)
+            else:
+                if distance < nearestPoints[0]:
+                    nearestPoints = (distance, currentNode.value)
+        if currentNode.hasLeftChild():
+            nearestPoints = self._performKNNSearch(currentNode.left, targetPoint, nearestPoints)
+        if currentNode.hasRightChild():
+            nearestPoints = self._performKNNSearch(currentNode.right, targetPoint, nearestPoints)
+
+
+        return nearestPoints
 
 tree = KDTree()
 tree.insert((30,40))
@@ -350,6 +372,7 @@ tree2.insert([4,4])
 tree2.visualize()
 print(tree2.performRangeSearch([(1.2,2.5), (3.2, 3.5)]))
 print(tree2.performRangeSearch([(3,1), (5,3)]))
+print(tree2.performKNNSearch((2,3), k=1))
 # linearSearch = [(2,3), ]
 # print("The minimum point in the x-dimension is: {} \n".format(tree2.findMin(tree2.dimensions[0])))
 # print("The minimum point in the y-dimension is: {} \n".format(tree2.findMin(tree2.dimensions[1])))
