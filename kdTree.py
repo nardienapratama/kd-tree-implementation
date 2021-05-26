@@ -6,6 +6,8 @@
 from rectangle import Rectangle
 from myNode import MyNode
 from ppbtree import *
+from heapq import nsmallest
+from operator import itemgetter
 import math
 
 
@@ -160,9 +162,6 @@ class KDTree:
         root = self._visualize(self.root)
         print("\nVISUALIZATION OF KD-TREE: \n")
         print_tree(root, nameattr='value')
-        print("\n")
-        print("\n")
-
 
     def _visualize(self, currentNode):
         # value = str(currentNode.value) + " Rect: " + currentNode.rectangle.__str__()
@@ -251,6 +250,7 @@ class KDTree:
         return minimum
 
     def performRangeSearch(self, queryBox):
+        print("Performing Range Search with Query Box {}:".format(queryBox))
         # START AT ROOT
         # RECURSIVELY SEARCH FOR POINTS IN BOTH SUBTREES
         # PRUNE: IF QUERY RECTANGLE DOESN'T INTERSECT THE RECTANGLE CORRESPONDING
@@ -298,24 +298,32 @@ class KDTree:
         return result
 
     def performKNNSearch(self, targetPoint, k=1):
-        result = self._performKNNSearch(self.root, targetPoint, [])
-        return result
+        print("Performing KNN Search at point {} with k = {}:".format(targetPoint, k))
+        result = self._performKNNSearch(self.root, targetPoint, [], k)
+        finalResult = []
+        for i in result:
+            finalResult.append(i[0])
+        return finalResult
 
-    def _performKNNSearch(self, currentNode, targetPoint, nearestPoints):
+    def _performKNNSearch(self, currentNode, targetPoint, nearestPoints, k=1):
         distance = self.distanceTo(currentNode.value, targetPoint)
         # if distance <= radius:
         # TODO: add {currentNode : distance} to nearestPoints dictionary
         # IF NO POINTS IN LIST YET, APPEND
         if currentNode.value[0] != targetPoint[0] or currentNode.value[1] != targetPoint[1]:
-            if not nearestPoints:
-                nearestPoints = (distance, currentNode.value)
+            if len(nearestPoints) < k:
+                nearestPoints.append((currentNode.value, distance))
             else:
-                if distance < nearestPoints[0]:
-                    nearestPoints = (distance, currentNode.value)
+                # OUT OF THE K SMALLEST TUPLES, FIND THE ONE WITH BIGGEST DISTANCE
+                nearestPointsMax = max(nearestPoints, key=itemgetter(1))
+                # COMPARE CURRENT DISTANCE TO DISTANCE IN THE nearestPointsMax
+                if distance < nearestPointsMax[1]:
+                    nearestPoints.remove(nearestPointsMax)
+                    nearestPoints.append((currentNode.value, distance))
         if currentNode.hasLeftChild():
-            nearestPoints = self._performKNNSearch(currentNode.left, targetPoint, nearestPoints)
+            nearestPoints = self._performKNNSearch(currentNode.left, targetPoint, nearestPoints, k)
         if currentNode.hasRightChild():
-            nearestPoints = self._performKNNSearch(currentNode.right, targetPoint, nearestPoints)
+            nearestPoints = self._performKNNSearch(currentNode.right, targetPoint, nearestPoints, k)
 
 
         return nearestPoints
@@ -373,6 +381,8 @@ tree2.visualize()
 print(tree2.performRangeSearch([(1.2,2.5), (3.2, 3.5)]))
 print(tree2.performRangeSearch([(3,1), (5,3)]))
 print(tree2.performKNNSearch((2,3), k=1))
+print(tree2.performKNNSearch((2,3), k=2))
+print(tree2.performKNNSearch((2,3), k=3))
 # linearSearch = [(2,3), ]
 # print("The minimum point in the x-dimension is: {} \n".format(tree2.findMin(tree2.dimensions[0])))
 # print("The minimum point in the y-dimension is: {} \n".format(tree2.findMin(tree2.dimensions[1])))
