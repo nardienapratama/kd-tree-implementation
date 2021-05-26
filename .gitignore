@@ -4,3 +4,5 @@ __pycache__
 .pydevproject
 prettybtree
 .settings
+/kdtree/input3200k.txt
+*.java
