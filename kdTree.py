@@ -7,6 +7,8 @@ from rectangle import Rectangle
 from myNode import MyNode
 from ppbtree import *
 import math
+import matplotlib.pyplot as plt
+from matplotlib.patches import Rectangle as Rect
 
 
 class KDTree:
@@ -284,8 +286,14 @@ class KDTree:
         (queryBox[0][0] <= rectangleObj.getX2()) and 
         (rectangleObj.getX1() <= queryBox[1][0])):
             return True
-        else:
-            return False
+        return False
+
+    
+    def _checkPointInRect(self, point, queryBox):
+        if (point[0] >= queryBox[0][0] and point[0] <= queryBox[1][0] and
+        point[1] >= queryBox[0][1] and point[1] <= queryBox[1][1]):
+            return True
+        return False
 
     def performKNNSearch(self, radius):
         return
@@ -303,7 +311,8 @@ tree.visualize()
 
 tree = KDTree()
 rectangle = Rectangle(1, 1, 4, 3)
-print(checkRectIntersection(rectangle, [(4,-2), (5,-1)]))
+print(tree._checkRectIntersection(rectangle, [(0,0), (0.5,0.5)]))
+print(tree._checkPointInRect((1,0),  [(1,1), (4,3)]))
 
 # tree = KDTree()
 # tree.insert((30,40))
@@ -331,14 +340,17 @@ print(checkRectIntersection(rectangle, [(4,-2), (5,-1)]))
 # print("The minimum point in the x-dimension is: {} \n".format(tree.findMin(tree.dimensions[0])))
 # print("The minimum point in the y-dimension is: {} \n".format(tree.findMin(tree.dimensions[1])))
 
-# tree2 = KDTree()
-# tree2.insert((2,3))
-# tree2.insert((1,5))
-# tree2.insert((4,2))
-# tree2.insert((4,5))
-# tree2.insert((3,3))
-# tree2.insert([4,4])   
-# tree2.visualize()
+tree2 = KDTree()
+tree2.insert((2,3))
+tree2.insert((1,5))
+tree2.insert((4,2))
+tree2.insert((4,5))
+tree2.insert((3,3))
+tree2.insert([4,4])   
+tree2.visualize()
+print(tree2.performRangeSearch([(1.2,2.5), (3.2, 3.5)]))
+print(tree2.performRangeSearch([(3,1), (5,3)]))
+# linearSearch = [(2,3), ]
 # print("The minimum point in the x-dimension is: {} \n".format(tree2.findMin(tree2.dimensions[0])))
 # print("The minimum point in the y-dimension is: {} \n".format(tree2.findMin(tree2.dimensions[1])))
 # tree2.insert((1,3))
