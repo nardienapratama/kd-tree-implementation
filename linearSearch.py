@@ -19,7 +19,7 @@ class Linear():
         self.data = linearSearchArray
 
     def performRangeSearch(self, queryBox):
-        print("LINEAR SCAN: Performing Range Search with Query Box {}:".format(queryBox))
+        print("LINEAR SCAN: Range Search with Query Box {}:".format(queryBox))
         result = []
         for point in self.data:
             if (point[0] >= queryBox[0][0] and 
@@ -31,17 +31,18 @@ class Linear():
         return result
 
     def performKNNSearch(self, targetPoint, k=1):
-        print("LINEAR SCAN: Performing KNN Search at point {} with k = {}:".format(targetPoint, k))
-        result = []
+        print("LINEAR SCAN: KNN Search at point {} with k = {}:".format(targetPoint, k))
+        result = {}
         for point in self.data:
             distance = distanceTo(point, targetPoint)
             if len(result) < k:
-                result.append((point, distance))
+                result[point] = distance
             else:
-                nearestPointsMax = max(result, key=itemgetter(1))
+                # OUT OF THE K SMALLEST TUPLES, FIND THE ONE WITH BIGGEST DISTANCE
+                nearestPointsMax = max(result.items(), key=itemgetter(1))
                 # COMPARE CURRENT DISTANCE TO DISTANCE IN THE nearestPointsMax
                 if distance < nearestPointsMax[1]:
-                    result.remove(nearestPointsMax)
-                    result.append((point, distance))
+                    del result[nearestPointsMax[0]]
+                    result[point] = distance
             
         return result
