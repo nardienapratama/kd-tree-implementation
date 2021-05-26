@@ -4,9 +4,8 @@
 ### https://www.geeksforgeeks.org/k-dimensional-tree-set-3-delete/
 
 from rectangle import Rectangle
-from myNode import MyNode
+from node import Node
 from ppbtree import *
-from heapq import nsmallest
 from operator import itemgetter
 import math
 
@@ -30,7 +29,7 @@ class KDTree:
         # IF THERE IS NO ROOT NODE YET, SET CURRENT POINT AS ROOT NODE
         if self.root is None:
             rectangle = Rectangle(-math.inf, -math.inf, math.inf, math.inf)
-            self.root = MyNode(point, self.dimensions[0], 1, rectangle)
+            self.root = Node(point, self.dimensions[0], 1, rectangle)
             self.treeHeight = 1
         else:
             self._insert(self.root, point, 0)
@@ -58,7 +57,7 @@ class KDTree:
                     
                     newRectangle = Rectangle(currentNode.getX(), rectangle.getY1(), 
                                             rectangle.getX2(), rectangle.getY2())
-                    currentNode.right = MyNode(point, self.dimensions[1], heightCount, newRectangle)
+                    currentNode.right = Node(point, self.dimensions[1], heightCount, newRectangle)
             else:
                 if currentNode.left:
                     self._insert(currentNode.left, point, heightCount)
@@ -68,7 +67,7 @@ class KDTree:
                     rectangle = currentNode.getRectangle()
                     newRectangle = Rectangle(rectangle.getX1(), rectangle.getY1(), 
                                             currentNode.getX(), rectangle.getY2())
-                    currentNode.left = MyNode(point, self.dimensions[1], heightCount, newRectangle)
+                    currentNode.left = Node(point, self.dimensions[1], heightCount, newRectangle)
                     
                 
 
@@ -83,7 +82,7 @@ class KDTree:
                     rectangle = currentNode.getRectangle()
                     newRectangle = Rectangle(rectangle.getX1(), currentNode.getY(), 
                                             rectangle.getX2(), rectangle.getY2())
-                    currentNode.right = MyNode(point, self.dimensions[0], heightCount, newRectangle)
+                    currentNode.right = Node(point, self.dimensions[0], heightCount, newRectangle)
                     
             
             else:
@@ -97,7 +96,7 @@ class KDTree:
                     
                     newRectangle = Rectangle(rectangle.getX1(), rectangle.getY1(), 
                                             rectangle.getX2(), currentNode.getY())
-                    currentNode.left = MyNode(point, self.dimensions[0], heightCount, newRectangle)
+                    currentNode.left = Node(point, self.dimensions[0], heightCount, newRectangle)
 
         if heightCount > self.treeHeight:
             self.treeHeight = heightCount
@@ -249,8 +248,24 @@ class KDTree:
             minimum = currentNode
         return minimum
 
+    def _checkRectIntersection(self, rectangleObj, queryBox):
+        # CHECK THE FOLLOWING CONDITIONS FROM THE SLIDE
+        if ((rectangleObj.getY1() <= queryBox[1][1]) and
+        (queryBox[0][1] <= rectangleObj.getY2()) and 
+        (queryBox[0][0] <= rectangleObj.getX2()) and 
+        (rectangleObj.getX1() <= queryBox[1][0])):
+            return True
+        return False
+
+    
+    def _checkPointInRect(self, point, queryBox):
+        if (point[0] >= queryBox[0][0] and point[0] <= queryBox[1][0] and
+        point[1] >= queryBox[0][1] and point[1] <= queryBox[1][1]):
+            return True
+        return False
+
     def performRangeSearch(self, queryBox):
-        print("Performing Range Search with Query Box {}:".format(queryBox))
+        print("KD-TREE: Performing Range Search with Query Box {}:".format(queryBox))
         # START AT ROOT
         # RECURSIVELY SEARCH FOR POINTS IN BOTH SUBTREES
         # PRUNE: IF QUERY RECTANGLE DOESN'T INTERSECT THE RECTANGLE CORRESPONDING
@@ -277,28 +292,8 @@ class KDTree:
 
         return result
 
-    def _checkRectIntersection(self, rectangleObj, queryBox):
-        # CHECK THE FOLLOWING CONDITIONS FROM THE SLIDE
-        if ((rectangleObj.getY1() <= queryBox[1][1]) and
-        (queryBox[0][1] <= rectangleObj.getY2()) and 
-        (queryBox[0][0] <= rectangleObj.getX2()) and 
-        (rectangleObj.getX1() <= queryBox[1][0])):
-            return True
-        return False
-
-    
-    def _checkPointInRect(self, point, queryBox):
-        if (point[0] >= queryBox[0][0] and point[0] <= queryBox[1][0] and
-        point[1] >= queryBox[0][1] and point[1] <= queryBox[1][1]):
-            return True
-        return False
-
-    def distanceTo(self, point1, point2):
-        result = math.sqrt((point1[0]-point2[0])**2 + (point1[1]-point2[1])**2)
-        return result
-
     def performKNNSearch(self, targetPoint, k=1):
-        print("Performing KNN Search at point {} with k = {}:".format(targetPoint, k))
+        print("KD-TREE: Performing KNN Search at point {} with k = {}:".format(targetPoint, k))
         result = self._performKNNSearch(self.root, targetPoint, [], k)
         finalResult = []
         for i in result:
@@ -306,7 +301,7 @@ class KDTree:
         return finalResult
 
     def _performKNNSearch(self, currentNode, targetPoint, nearestPoints, k=1):
-        distance = self.distanceTo(currentNode.value, targetPoint)
+        distance = distanceTo(currentNode.value, targetPoint)
         # if distance <= radius:
         # TODO: add {currentNode : distance} to nearestPoints dictionary
         # IF NO POINTS IN LIST YET, APPEND
@@ -327,16 +322,9 @@ class KDTree:
 
         return nearestPoints
 
-def insertLinearSearch(inputFile):
-    with open(inputFile, 'r') as f:
-        contents = f.readlines()
-    linearSearchArray = []
-    for line in contents:
-        point = line.split()
-        point[0] = float(point[0])
-        point[1] = float(point[1])
-        linearSearchArray.append((point[0], point[1]))
-    return linearSearchArray
+def distanceTo(point1, point2):
+    result = math.sqrt((point1[0]-point2[0])**2 + (point1[1]-point2[1])**2)
+    return result
 
 def createKDTreeFromFile(inputFile):
     with open(inputFile, 'r') as f:
