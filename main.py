@@ -1,122 +1,117 @@
+from math import inf
+from linearSearch import Linear, createLinearScanArrayFromFile
 from kdTree import *
 
+def testKD(filePath, queryBox, randomPoint):
+    print("Testing File: {}...".format(filePath.split("\\")[1]))
+    tree = createKDTreeFromFile(filePath)
+    rangeSearchResult = tree.performRangeSearch(queryBox)
+    nnSearchResult = tree.performKNNSearch(randomPoint, k=1)
+    five_nnSearchResult = tree.performKNNSearch(randomPoint, k=5)
+    ten_nnSearchResult = tree.performKNNSearch(randomPoint, k=10)
 
-atree = createKDTreeFromFile("kdtree\circle4.txt")
-atree.visualize()
-atree.performRangeSearch([(1.2,2.5), (3.2, 3.5)])
+    return (rangeSearchResult, nnSearchResult, five_nnSearchResult, ten_nnSearchResult)
 
-atree = createKDTreeFromFile("stackoverflow-test.txt")
-atree.visualize()
-atree.performRangeSearch([(1.2,2.5), (3.2, 3.5)])
+def testLinear(filePath, queryBox, randomPoint):
+    print("Testing File: {}...".format(filePath.split("\\")[1]))
+    linearObj = createLinearScanArrayFromFile(filePath)
+    rangeSearchResult = linearObj.performRangeSearch(queryBox)
+    nnSearchResult = linearObj.performKNNSearch(randomPoint, k=1)
+    five_nnSearchResult = linearObj.performKNNSearch(randomPoint, k=5)
+    ten_nnSearchResult = linearObj.performKNNSearch(randomPoint, k=10)
 
-atree = createKDTreeFromFile("kdtree\input100.txt")
-atree.visualize()
-atree.performRangeSearch([(1.2,2.5), (3.2, 3.5)])
+    return (rangeSearchResult, nnSearchResult, five_nnSearchResult, ten_nnSearchResult)
 
-atree = createKDTreeFromFile("kdtree\input5-2.txt")
-atree.visualize()
-atree.performRangeSearch([(1.2,2.5), (3.2, 3.5)])
+def testFile(filePath, queryBox):
+    randomPoint = chooseRandomPointFromFile(filePath)
+    kdTreeResults = testKD(filePath, queryBox, randomPoint)
+    print(" ")
+    linearScanResults = testLinear(filePath, queryBox, randomPoint)
 
+    return kdTreeResults, linearScanResults
 
+def testFileInsertDeleteKDTree(filePath):
+    tree = createKDTreeFromFile(filePath)
+    tree.visualize()
+    tree.delete(tree.root.value)
+    tree.visualize()
+
+'''
+A. BEHAVIOUR AND PERFORMANCE OF INSERT AND DELETE
+'''
+
+# TEST CASE 1: FROM TUTORIAL WEEK 5
+# print("\nBuilding tree from Tutorial Week 4 Q5...\n")
 # tree = KDTree()
-# tree.insert((30,40))
-# tree.insert((5,25))
-# tree.insert((70,70))
-# tree.insert((10,12))
-# tree.insert((50,30))
-# tree.insert((35,45))   
+# tree.insert((35,60))
+# tree.insert((20,45))
+# tree.insert((85,40))
+# tree.insert((10,35))
+# tree.insert((65,30))
+# tree.insert((50,85))
+# tree.insert((20,20))
+# tree.insert((70,20))
+# tree.insert((60,90))
+# tree.insert((75,60))
+# tree.insert((65,65))
+# tree.insert((90,55))
 # tree.visualize()
-# tree.delete((30,40))
+# tree.delete((tree.root.value))
 # tree.visualize()
 
-# tree = KDTree()
-# rectangle = Rectangle(1, 1, 4, 3)
-# print(tree._checkRectIntersection(rectangle, [(0,0), (0.5,0.5)]))
-# print(tree._checkPointInRect((1,0),  [(1,1), (4,3)]))
-
-# tree = KDTree()
-# tree.insert((30,40))
-# tree.insert((5,25))
-# tree.insert((70,70))
-# tree.insert((10,12))
-# tree.insert((50,30))
-# tree.insert((35,45))   
-# tree.visualize()
-# tree.delete((70,70))
-# tree.visualize()
-tree2 = KDTree()
-tree2.insert((2,3))
-tree2.insert((1,5))
-tree2.insert((4,2))
-tree2.insert((4,5))
-tree2.insert((3,3))
-tree2.insert([4,4])   
-tree2.visualize()
-tree2.performRangeSearch([(1.2,2.5), (3.2, 3.5)])
-tree2.performRangeSearch([(3,1), (5,3)])
-tree2.performKNNSearch((2,3), k=1)
-tree2.performKNNSearch((2,3), k=2)
-# print(tree2.performKNNSearch((2,3), k=3))
-
-# tree = KDTree()
-# tree.insert((51,75))
-# tree.insert((25,40))
-# tree.insert((70,70))
-# tree.insert((10,30))
-# tree.insert((35,90))
-# tree.insert((55,1)) 
-# tree.insert((60,80))
-# tree.insert((1,10)) 
-# tree.insert((50,50))   
-# tree.visualize()
-# print("The minimum point in the x-dimension is: {} \n".format(tree.findMin(tree.dimensions[0])))
-# print("The minimum point in the y-dimension is: {} \n".format(tree.findMin(tree.dimensions[1])))
+# TEST CASE 2: circle10.txt
+print("\nBuilding tree from circle10.txt...\n")
+tree = createKDTreeFromFile("kdtree\circle10.txt")
+randomPoint = chooseRandomPointFromFile("kdtree\circle10.txt")
+tree.visualize()
+tree.delete(randomPoint)
+tree.visualize()
 
 
-# linearSearch = [(2,3), ]
-# print("The minimum point in the x-dimension is: {} \n".format(tree2.findMin(tree2.dimensions[0])))
-# print("The minimum point in the y-dimension is: {} \n".format(tree2.findMin(tree2.dimensions[1])))
-# tree2.insert((1,3))
-# tree2.insert((3,1))
-# tree2.insert((3,10))
-# tree2.visualize()
-# print("The minimum point in the x-dimension is: {} \n".format(tree2.findMin(tree2.dimensions[0])))
-# print("The minimum point in the y-dimension is: {} \n".format(tree2.findMin(tree2.dimensions[1])))
+'''
+B. BEHAVIOUR AND PERFORMANCE OF KD-TREE VS LINEAR SEARCH
+'''
+# CHECK IF RESULTS ARE CORRECT
+
+# queryBox = [(0, 0), (0.3, 0.3)]
+# kd, linear = testFile("kdtree\input100.txt", queryBox)
+# print("CHECKING RESULTS FOR FILE {}: \n".format("input100.txt"))
+# print("KD TREE: ")
+# print("Range Search Result at {0}: \n{1}".format(queryBox, sorted(kd[0])))
+# print("\n1-NN Search Result:", sorted(kd[1]))
+# print("5-NN Search Result:", sorted(kd[2]))
+# print("10-NN Search Result:", sorted(kd[3]))
+# print("\nLinear Scan: ")
+# print("Range Search Result at {0}: \n{1}".format(queryBox, sorted(linear[0])))
+# print("\n1-NN Search Result:", sorted(linear[1]))
+# print("5-NN Search Result:", sorted(linear[2]))
+# print("10-NN Search Result:", sorted(linear[3]))
+
+# # CHECK IF RESULTS ARE CORRECT
+
+# queryBox = [(0, 0), (0.3, 0.3)]
+# kd, linear = testFile("kdtree\circle100.txt", queryBox)
+# print("CHECKING RESULTS FOR FILE {}:\n".format("circle100.txt"))
+# print("KD TREE: ")
+# print("Range Search Result at {0}: \n{1}".format(queryBox, sorted(kd[0])))
+# print("\n1-NN Search Result:", sorted(kd[1]))
+# print("5-NN Search Result:", sorted(kd[2]))
+# print("10-NN Search Result:", sorted(kd[3]))
+# print("\nLinear Scan: ")
+# print("Range Search Result at {0}: \n{1}".format(queryBox, sorted(linear[0])))
+# print("\n1-NN Search Result:", sorted(linear[1]))
+# print("5-NN Search Result:", sorted(linear[2]))
+# print("10-NN Search Result:", sorted(linear[3]))
 
 
-# tree3 = KDTree()
-# tree3.insert((35,60))
-# tree3.insert((20,45))
-# tree3.insert((85,40))
-# tree3.insert((10,35))
-# tree3.insert((65,30))
-# tree3.insert((50,85))  
-# tree3.insert((20,20))  
-# tree3.insert((70,20))   
-# tree3.insert((60,90))  
-# tree3.insert((75,60))  
-# tree3.insert((65,65))  
-# tree3.insert((90,55))  
-# tree3.visualize()
-# tree3.delete((35,60))
-# tree3.visualize()
+# UNCOMMENT EACH ONE TO TRY THE TEST CASES
 
-# print(tree3.root.right.right)
-# print("min of (85,40): {}".format(tree3._findMin(tree3.root.right, 0).value))
-# print("min of (60,90): {}".format(tree3._findMin(tree3.root.right.right.right, 0).value))
-# print("min of (75,60): {}".format(tree3._findMin(tree3.root.right.right.right.left, 1).value))
-
-# tree4 = KDTree()
-# tree4.insert((35,60))
-# tree4.insert((20,45))
-# tree4.insert((85,40))
-# tree4.insert((10,35))
-# tree4.insert((65,30))
-# tree4.insert((50,85))  
-# tree4.insert((20,20))  
-# tree4.insert((70,20))   
-# tree4.insert((60,90))  
-# tree4.insert((75,50))  
-# tree4.insert((65,65))  
-# tree4.insert((90,55))  
-# tree4.visualize()
+# queryBox = [(0, 0), (0.3, 0.3)]
+# kd, linear = testFile("kdtree\input100.txt", queryBox)
+# kd, linear = testFile("kdtree\input10K.txt", queryBox)
+# kd, linear = testFile("kdtree\input100K.txt", queryBox)
+# kd, linear = testFile("kdtree\input1M.txt", queryBox)
+# kd, linear = testFile("kdtree\circle10.txt", queryBox)
+# kd, linear = testFile("kdtree\circle100.txt", queryBox)
+# kd, linear = testFile("kdtree\circle1000.txt", queryBox)
+# kd, linear = testFile("kdtree\circle10000.txt", queryBox)
