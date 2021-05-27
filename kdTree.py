@@ -1,14 +1,20 @@
 # References Used for Guidance: 
 ## https://runestone.academy/runestone/books/published/pythonds/Trees/SearchTreeImplementation.html
+## https://math.stackexchange.com/questions/1764878/how-to-efficiently-create-balanced-kd-trees-from-a-static-set-of-points/1764963
+## https://stackoverflow.com/questions/2927165/confused-about-definition-of-a-median-when-constructing-a-kd-tree
+## https://en.wikipedia.org/wiki/K-d_tree
 ## DELETION ALGORITHM BASED ON GEEKS FOR GEEKS' ALGORITHM DESCRIPTION (CODE NOT COPIED AND PASTED): 
 ### https://www.geeksforgeeks.org/k-dimensional-tree-set-3-delete/
+
+# Reference to improve implementation:
+# https://stackoverflow.com/questions/5254838/calculating-distance-between-a-point-and-a-rectangular-box-nearest-point
 
 from rectangle import Rectangle
 from node import MyNode
 from ppbtree import *
 from operator import itemgetter
-import math, time
-
+import math, time, random
+random.seed(10)
 
 class KDTree:
     def __init__(self):
@@ -28,13 +34,17 @@ class KDTree:
         '''
         # IF THERE IS NO ROOT NODE YET, SET CURRENT POINT AS ROOT NODE
         if self.root is None:
+            startTime = round(time.time() *1000)
             rectangle = Rectangle(-math.inf, -math.inf, math.inf, math.inf)
             self.root = MyNode(point, self.dimensions[0], 1, rectangle)
             self.treeHeight = 1
+            endTime = round(time.time() *1000)
         else:
+            startTime = round(time.time() *1000)
             self._insert(self.root, point, 0)
+            endTime = round(time.time() *1000)
 
-        print("Inserting point: {}".format(point))
+        print("Inserting point {0} took {1} milliseconds.".format(point, endTime-startTime))
             
 
     def _insert(self, currentNode, point, heightCount):
@@ -107,8 +117,10 @@ class KDTree:
         '''
         This method deletes a point from the kd-tree.
         '''
+        startTime = round(time.time() *1000)
         self.root = self._delete(self.root, point)
-        print("Deleting point: {}".format(point))
+        endTime = round(time.time() *1000)
+        print("Deleting point {0} took {1} milliseconds.".format(point, endTime-startTime))
 
     # BASED ON GEEKS FOR GEEKS' DELETE ALGORITHM PSEUDOCODE
     def _delete(self, currentNode, point):
@@ -264,8 +276,18 @@ class KDTree:
             return True
         return False
 
+    def _checkBoxLineIntersection(self, queryBox, currentNode):
+        '''
+        Checks if query box intersects with the current splitting line segment. If so, returns True. Else, returns False.
+        '''
+        currentAxis = currentNode.getAxis()
+        if (queryBox[0][currentAxis] <= currentNode.value[currentAxis] and 
+        currentNode.value[currentAxis] <= queryBox[1][currentAxis] ):
+            return True
+        return False
+
     def performRangeSearch(self, queryBox):
-        print("KD-TREE: Range Search with Query Box {}:".format(queryBox))
+        print("\nKD-TREE: Range Search with Query Box {}:".format(queryBox))
         # START AT ROOT
         # RECURSIVELY SEARCH FOR POINTS IN BOTH SUBTREES
         # PRUNE: IF QUERY RECTANGLE DOESN'T INTERSECT THE RECTANGLE CORRESPONDING
@@ -273,13 +295,14 @@ class KDTree:
         startTime = round(time.time() *1000)
         result = self._performRangeSearch(self.root, queryBox, [])
         endTime = round(time.time() *1000)
-        print("Time Elapsed for KD-TREE Range Search: {} seconds".format(endTime - startTime))
+        print("Time Elapsed for Range Search Using kd-Tree: {} milliseconds".format(endTime - startTime))
         return result
     
     def _performRangeSearch(self, currentNode, queryBox, result):
-        # CHECK RECTANGLE INTERSECTION
+        # CHECK QUERY BOX AND SPLITTING LINE SEGMENT INTERSECTION
         # IF INTERSECTS, CHECK NODE AND SUBTREES
-        if self._checkRectIntersection(currentNode.rectangle, queryBox):
+        # IF QUERY BOX INTERSECTS WITH THE SPLITTING LINE SEGMENT:
+        if self._checkBoxLineIntersection(queryBox, currentNode):
             # CHECK IF NODE IS IN QUERY BOX
             if self._checkPointInRect(currentNode.value, queryBox):
                 # TODO: ADD POINT TO RESULT LIST
@@ -292,48 +315,83 @@ class KDTree:
             if currentNode.hasLeftChild():
                 # TRAVERSE DOWN LEFT SUBTREE
                 result = self._performRangeSearch(currentNode.left, queryBox, result)
+        
+        else:
+            if queryBox[1][currentNode.getAxis()] < currentNode.value[currentNode.getAxis()]:
+                if currentNode.hasLeftChild():
+                    # TODO: TRAVERSE LEFT SUBTREE ONLY
+                    result = self._performRangeSearch(currentNode.left, queryBox, result)
+                    pass
+            elif queryBox[0][currentNode.getAxis()] >= currentNode.value[currentNode.getAxis()]:
+                if currentNode.hasRightChild():
+                    # TODO: TRAVERSE RIGHT SUBTREE ONLY
+                    result = self._performRangeSearch(currentNode.right, queryBox, result)
+                
 
         return result
 
     def performKNNSearch(self, targetPoint, k=1):
-        print("KD-TREE: KNN Search at point {} with k = {}:".format(targetPoint, k))
+        print("\nKD-TREE: KNN Search at point {} with k = {}:".format(targetPoint, k))
         startTime = round(time.time() *1000)
         result = self._performKNNSearch(self.root, targetPoint, {}, k)
         endTime = round(time.time() *1000)
-        print("Time Elapsed for KD-TREE kNN Search: {} seconds".format(endTime - startTime))
+        print("Time Elapsed for kNN Search Using kd-Tree: {} milliseconds".format(endTime - startTime))
         finalResult = []
-        for key, _ in result:
+        for key, _ in result.items():
             finalResult.append(key)
 
         return finalResult
 
     def _performKNNSearch(self, currentNode, targetPoint, nearestPoints, k=1):
         distance = distanceTo(currentNode.value, targetPoint)
-        # if distance <= radius:
-        # TODO: add {currentNode : distance} to nearestPoints dictionary
-        # IF NO POINTS IN LIST YET, APPEND
-        if currentNode.value[0] != targetPoint[0] or currentNode.value[1] != targetPoint[1]:
-            if len(nearestPoints) < k:
-                nearestPoints[currentNode.value] = distance
-            else:
-                # OUT OF THE K SMALLEST TUPLES, FIND THE ONE WITH BIGGEST DISTANCE
-                nearestPointsMax = max(nearestPoints.items(), key=itemgetter(1))
-                # COMPARE CURRENT DISTANCE TO DISTANCE IN THE nearestPointsMax
-                if distance < nearestPointsMax[1]:
-                    del nearestPoints[nearestPointsMax[0]]
+        if nearestPoints:
+            # GET BIGGEST DISTANCE SO FAR
+            # OUT OF THE K SMALLEST TUPLES, FIND THE ONE WITH BIGGEST DISTANCE
+            nearestPointsMax = max(nearestPoints.items(), key=itemgetter(1))
+        else:
+            nearestPointsMax = (currentNode.value, math.inf)
+        # IF THE DISTANCE FROM TARGET POINT TO CURRENT NODE'S RECTANGLE IS SMALLER THAN THE BIGGEST DISTANCE IN THE DICTIONARY, THEN CHECK NODE AND SUBTREES; ELSE SKIP
+        distPointRect = distanceFromPointToRect(targetPoint, currentNode.rectangle)
+        if distPointRect < nearestPointsMax[1]:
+            if currentNode.value[0] != targetPoint[0] or currentNode.value[1] != targetPoint[1]:
+                if len(nearestPoints) < k:
                     nearestPoints[currentNode.value] = distance
-        if currentNode.hasLeftChild():
-            nearestPoints = self._performKNNSearch(currentNode.left, targetPoint, nearestPoints, k)
-        if currentNode.hasRightChild():
-            nearestPoints = self._performKNNSearch(currentNode.right, targetPoint, nearestPoints, k)
+                else:
+                    # COMPARE CURRENT DISTANCE TO DISTANCE IN THE nearestPointsMax
+                    if distance < nearestPointsMax[1]:
+                        del nearestPoints[nearestPointsMax[0]]
+                        nearestPoints[currentNode.value] = distance
+            if currentNode.hasLeftChild():
+                nearestPoints = self._performKNNSearch(currentNode.left, targetPoint, nearestPoints, k)
+            if currentNode.hasRightChild():
+                nearestPoints = self._performKNNSearch(currentNode.right, targetPoint, nearestPoints, k)
 
         return nearestPoints
+
+def distanceFromPointToRect(point, rect):
+    # REFERENCE: https://stackoverflow.com/questions/5254838/calculating-distance-between-a-point-and-a-rectangular-box-nearest-point
+    dx = max(rect.getX1() - point[0], 0, point[0] - rect.getX2())
+    dy = max(rect.getY1() - point[1], 0, point[1] - rect.getY2())
+    return math.sqrt((dx)**2 + (dy)**2)
 
 def distanceTo(point1, point2):
     result = math.sqrt((point1[0]-point2[0])**2 + (point1[1]-point2[1])**2)
     return result
 
+def chooseRandomPointFromFile(inputFile):
+    with open(inputFile, 'r') as f:
+        contents = f.readlines()
+    
+    randomLineIndex = random.randrange(0, len(contents))
+    randomLine = contents[randomLineIndex]
+    randomLinePoint = randomLine.split()
+    randomLinePoint[0] = float(randomLinePoint[0])
+    randomLinePoint[1] = float(randomLinePoint[1])
+
+    return randomLinePoint
+
 def createKDTreeFromFile(inputFile):
+    startTime = round(time.time() *1000)
     with open(inputFile, 'r') as f:
         contents = f.readlines()
     
@@ -346,6 +404,8 @@ def createKDTreeFromFile(inputFile):
     
     tree = KDTree()
     modifiedTree = _createKDTreeFromFile(tree, points, 0)
+    endTime = round(time.time() *1000)
+    print("Construction time of kd-Tree: {} milliseconds".format(endTime-startTime))
     
     return modifiedTree
 
