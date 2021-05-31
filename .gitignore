@@ -6,3 +6,6 @@ prettybtree
 .settings
 /kdtree/input3200k.txt
 *.java
+*.pdf
+*.zip
+/src
