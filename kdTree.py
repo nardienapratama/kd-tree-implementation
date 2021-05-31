@@ -1,12 +1,12 @@
 # References Used for Guidance: 
+## https://www.cs.princeton.edu/courses/archive/spring20/cos226/assignments/kdtree/checklist.php
+## https://www.datasciencecentral.com/profiles/blogs/implementing-kd-tree-for-fast-range-search-nearest-neighbor
 ## https://runestone.academy/runestone/books/published/pythonds/Trees/SearchTreeImplementation.html
 ## https://math.stackexchange.com/questions/1764878/how-to-efficiently-create-balanced-kd-trees-from-a-static-set-of-points/1764963
 ## https://stackoverflow.com/questions/2927165/confused-about-definition-of-a-median-when-constructing-a-kd-tree
 ## https://en.wikipedia.org/wiki/K-d_tree
 ## DELETION ALGORITHM BASED ON GEEKS FOR GEEKS' ALGORITHM DESCRIPTION (CODE NOT COPIED AND PASTED): 
 ### https://www.geeksforgeeks.org/k-dimensional-tree-set-3-delete/
-
-# Reference to improve implementation:
 # https://stackoverflow.com/questions/5254838/calculating-distance-between-a-point-and-a-rectangular-box-nearest-point
 
 from rectangle import Rectangle
