@@ -1,5 +1,4 @@
-from math import inf
-from linearSearch import Linear, createLinearScanArrayFromFile
+from linearSearch import *
 from kdTree import *
 
 def testKD(filePath, queryBox, randomPoint):
@@ -40,7 +39,7 @@ def testFileInsertDeleteKDTree(filePath):
 A. BEHAVIOUR AND PERFORMANCE OF INSERT AND DELETE
 '''
 
-# TEST CASE 1: FROM TUTORIAL WEEK 5
+'''TEST CASE 1: FROM TUTORIAL WEEK 5'''
 # print("\nBuilding tree from Tutorial Week 4 Q5...\n")
 # tree = KDTree()
 # tree.insert((35,60))
@@ -59,19 +58,19 @@ A. BEHAVIOUR AND PERFORMANCE OF INSERT AND DELETE
 # tree.delete((tree.root.value))
 # tree.visualize()
 
-# TEST CASE 2: circle10.txt
-print("\nBuilding tree from circle10.txt...\n")
-tree = createKDTreeFromFile("kdtree\circle10.txt")
-randomPoint = chooseRandomPointFromFile("kdtree\circle10.txt")
-tree.visualize()
-tree.delete(randomPoint)
-tree.visualize()
+'''TEST CASE 2: circle10.txt'''
+# print("\nBuilding tree from circle10.txt...\n")
+# tree = createKDTreeFromFile("kdtree\circle10.txt")
+# randomPoint = chooseRandomPointFromFile("kdtree\circle10.txt")
+# tree.visualize()
+# tree.delete(randomPoint)
+# tree.visualize()
 
 
 '''
 B. BEHAVIOUR AND PERFORMANCE OF KD-TREE VS LINEAR SEARCH
 '''
-# CHECK IF RESULTS ARE CORRECT
+'''CHECK IF RESULTS ARE CORRECT FIRST'''
 
 # queryBox = [(0, 0), (0.3, 0.3)]
 # kd, linear = testFile("kdtree\input100.txt", queryBox)
@@ -87,7 +86,7 @@ B. BEHAVIOUR AND PERFORMANCE OF KD-TREE VS LINEAR SEARCH
 # print("5-NN Search Result:", sorted(linear[2]))
 # print("10-NN Search Result:", sorted(linear[3]))
 
-# # CHECK IF RESULTS ARE CORRECT
+'''CHECK IF RESULTS ARE CORRECT FIRST'''
 
 # queryBox = [(0, 0), (0.3, 0.3)]
 # kd, linear = testFile("kdtree\circle100.txt", queryBox)
@@ -104,7 +103,7 @@ B. BEHAVIOUR AND PERFORMANCE OF KD-TREE VS LINEAR SEARCH
 # print("10-NN Search Result:", sorted(linear[3]))
 
 
-# UNCOMMENT EACH ONE TO TRY THE TEST CASES
+'''KD TREE VS LINEAR SEARCH: RANGE SEARCH & KNN SEARCH'''
 
 # queryBox = [(0, 0), (0.3, 0.3)]
 # kd, linear = testFile("kdtree\input100.txt", queryBox)
